@@ -65,7 +65,7 @@ struct DualNBackView: View {
                 .frame(minWidth: 120)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.black, lineWidth: 0.5)
+                        .stroke(Color.primary, lineWidth: 0.5)
                 )
                 .disabled(!vm.canRespond)
                 Spacer()
@@ -81,7 +81,7 @@ struct DualNBackView: View {
                 .frame(minWidth: 120)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.black, lineWidth: 0.5)
+                        .stroke(Color.primary, lineWidth: 0.5)
                 )
                 .disabled(!vm.canRespond)
                 
@@ -117,10 +117,21 @@ struct DualNBackView: View {
         .padding()
         .background(vm.feedbackColor ?? .clear)
         .animation(.easeOut(duration: 0.25), value: vm.feedbackColor)
-        .onChange(of: vm.state) { newState in
+        .onChange(of: vm.state) { _, newState in
             if newState == .finished {
                 showAlert = true
             }
         }
     }
+}
+
+#Preview {
+    let persistenceController = PersistenceController.preview
+
+    DualNBackView()
+        .environment(
+            \.managedObjectContext,
+            persistenceController.container.viewContext
+        )
+        .preferredColorScheme(.dark)
 }

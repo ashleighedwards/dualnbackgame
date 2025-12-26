@@ -70,6 +70,7 @@ final class DualNBackViewModel: ObservableObject {
         results = []
         score = 0
         state = .running
+        canRespond = true
         advanceToCurrent()
         scheduleTimer()
     }
@@ -77,17 +78,20 @@ final class DualNBackViewModel: ObservableObject {
     func pause() {
         tickCancellable?.cancel()
         state = .paused
+        canRespond = false
     }
     
     func resume() {
         guard state == .paused else { return }
         state = .running
+        canRespond = true
         scheduleTimer()
     }
     
     func stop() {
         tickCancellable?.cancel()
         state = .finished
+        canRespond = false
         computeAccuracy()
     }
     
@@ -108,6 +112,7 @@ final class DualNBackViewModel: ObservableObject {
         }
         let t = trials[currentIndex]
         currentStimulus = t.stimulus
+        
         posResponded = false
         soundResponded = false
         canRespond = true
@@ -118,11 +123,13 @@ final class DualNBackViewModel: ObservableObject {
     
     private func endTrialAndAdvance() {
         guard currentIndex < trials.count else { return }
-        let t = trials[currentIndex]
+        
         canRespond = false
         
-        let posCorrect = (t.isPosTarget == posResponded)
-        let soundCorrect = (t.isSoundTarget == soundResponded)
+        let t = trials[currentIndex]
+        let posCorrect = t.isPosTarget ? posResponded : !posResponded
+        let soundCorrect = t.isSoundTarget ? soundResponded : !soundResponded
+
         results.append(TrialResult(
             posResponse: posResponded,
             soundResponse: soundResponded,
@@ -140,14 +147,16 @@ final class DualNBackViewModel: ObservableObject {
         guard canRespond, !posResponded else { return }
         posResponded = true
         
-        flashFeedback(correct: trials[currentIndex].isPosTarget)
+        let trial = trials[currentIndex]
+        flashFeedback(correct: trial.isPosTarget)
     }
     
     func respondSoundMatch() {
         guard canRespond, !soundResponded else { return }
         soundResponded = true
         
-        flashFeedback(correct: trials[currentIndex].isSoundTarget)
+        let trial = trials[currentIndex]
+        flashFeedback(correct: trial.isSoundTarget)
     }
     
     private func flashFeedback(correct: Bool) {
